@@ -1,0 +1,10 @@
+{
+  "version": 2,
+  "dgSpecHash": "A5CRNJjG6Yg=",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Mosic\\source\\repos\\MichalOSProject\\Chess_Online\\Chess_Online.Server\\Chess_Online.Server.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Mosic\\.nuget\\packages\\microsoft.aspnetcore.spaproxy\\8.0.8\\microsoft.aspnetcore.spaproxy.8.0.8.nupkg.sha512"
+  ],
+  "logs": []
+}

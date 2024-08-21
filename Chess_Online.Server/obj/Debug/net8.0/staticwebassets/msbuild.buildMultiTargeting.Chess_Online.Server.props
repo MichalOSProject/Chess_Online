@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\Chess_Online.Server.props" />
+</Project>
