@@ -1,0 +1,11 @@
+﻿.button-container {
+    width: 800px;
+    height: 800px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+    .button-container > .MuiButton-root {
+        width: calc(12.5% - 8px);
+    }

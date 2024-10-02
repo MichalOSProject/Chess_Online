@@ -1,13 +1,13 @@
 {
   "Version": 1,
-  "Hash": "Kg2LT25Dq5Wq8Yr0ykZAoY2pAlJfadMy/aE1f4hHI84=",
+  "Hash": "qOha2941fkfH5lh8yVoW8aJuUe3sR5ATW+kBpcOzRdc=",
   "Source": "Chess_Online.Server",
   "BasePath": "_content/Chess_Online.Server",
   "Mode": "Default",
   "ManifestType": "Build",
   "ReferencedProjectsConfiguration": [
     {
-      "Identity": "C:\\Users\\Mosic\\source\\repos\\MichalOSProject\\Chess_Online\\chess_online.client\\chess_online.client.esproj",
+      "Identity": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\chess_online.client\\chess_online.client.esproj",
       "Version": 2,
       "Source": "chess_online.client",
       "GetPublishAssetsTargets": "GetCurrentProjectPublishStaticWebAssetItems",
