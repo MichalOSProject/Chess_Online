@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Box, TextField, Button } from "@mui/material";
 import { useForm } from 'react-hook-form';
+import { Link} from "react-router-dom";
 import { useNavigate } from 'react-router-dom';
 
 const Login = () => {
@@ -34,6 +35,7 @@ const Login = () => {
             setErrorText(error.message)
         });
     };
+
     return (
         <div
             style={{
@@ -85,6 +87,8 @@ const Login = () => {
                     Login
                 </Button>
             </Box>
+            <br />
+            <Link to='/register'><h3>Dont have an account? Sign Up!</h3></Link>
         </div>
     );
 };

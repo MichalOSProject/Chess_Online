@@ -17,7 +17,7 @@ public class LobbyService : ILobbyService
     private readonly IGameInstanceService _gameInstanceService;
     private readonly IAuthService _authService;
     private readonly UserManager<IdentityUser> _userManager;
-    private static readonly Dictionary<int, LobbyInfoModelOutput> SingleGameInstance = new Dictionary<int, LobbyInfoModelOutput>();
+    private static readonly Dictionary<int, LobbyInfoModelOutput> GamesInLobby = new Dictionary<int, LobbyInfoModelOutput>();
     private static int LobbyId = 0;
     private static readonly Dictionary<int, List<WebSocket>> AvailableGamesList = new Dictionary<int, List<WebSocket>>();
     private static readonly List<WebSocket> ViewersList = new List<WebSocket>();
@@ -32,6 +32,8 @@ public class LobbyService : ILobbyService
 
     public async Task HandleWebSocketAsync(WebSocket webSocket, string token)
     {
+        int SignedToGameId = 0;
+        int OwnedGameId = 0;
         var buffer = new byte[1024 * 4];
         WebSocketReceiveResult result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
         ViewersList.Add(webSocket);
@@ -49,126 +51,207 @@ public class LobbyService : ILobbyService
                 switch (command.Action)
                 {
                     case "newSession":
-                        await CreateNewSession(webSocket, user);
-                        BroadcastToViewers();
+                        OwnedGameId = await CreateNewSession(webSocket, user, OwnedGameId, SignedToGameId);
                         break;
 
                     case "delSession":
-                        await DeleteSession(command.Data, user);
-                        BroadcastToViewers();
+                        OwnedGameId = await DeleteSession(webSocket, OwnedGameId);
                         break;
 
                     case "leaveSession":
-                        await LeaveSession(webSocket, command.Data, user);
-                        BroadcastToViewers();
+                        SignedToGameId = await LeaveSession(webSocket, SignedToGameId);
                         break;
                     case "joinSession":
-                        await JoinSession(webSocket, command.Data, user);
-                        BroadcastToViewers();
+                        SignedToGameId = await JoinSession(webSocket, command.Data, user, SignedToGameId, OwnedGameId);
                         break;
                     case "startSession":
-                        await StartSession(webSocket, command.Data, user);
-                        BroadcastToViewers();
+                        OwnedGameId = await StartSession(webSocket, user, OwnedGameId);
                         break;
                     case "getLobby":
                         await GetLobbyInfo(webSocket);
                         break;
                     default:
-                        await HandleUnknownActionAsync(webSocket);
+                        await SendDataToEndpoint(webSocket, "Unknown action", "error");
                         break;
                 }
             }
             result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
         }
 
-        try
-        {
-            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-        }
-        finally
-        {
-            ViewersList.Remove(webSocket);
-        };
+        CloseSession(webSocket, result, OwnedGameId, SignedToGameId);
     }
 
     private async Task GetLobbyInfo(WebSocket webSocket)
     {
-        var message = SingleGameInstance.Any() ? JsonConvert.SerializeObject(SingleGameInstance) : null;
-        await SendLobbyData(webSocket, message);
+        var message = GamesInLobby.Any() ? JsonConvert.SerializeObject(GamesInLobby) : null;
+        await SendDataToEndpoint(webSocket, message, "lobbyUpdate");
     }
-    private async Task JoinSession(WebSocket webSocket, string data, IdentityUser user)
+    private async Task CloseSession(WebSocket webSocket, WebSocketReceiveResult result, int OwnedGameId, int SignedToGameId)
     {
-        int id = int.Parse(data);
-        if (SingleGameInstance[id].PlayerTwoId == null && SingleGameInstance[id].PlayerOneId != user.Id)
+        ViewersList.Remove(webSocket);
+
+        if (OwnedGameId != 0)
         {
-            SingleGameInstance[id].PlayerTwo = user.UserName;
-            SingleGameInstance[id].PlayerTwoId = user.Id;
-            AvailableGamesList[id].Add(webSocket);
+            await DeleteSession(webSocket, OwnedGameId);
         }
-    }
-    private async Task LeaveSession(WebSocket webSocket, string data, IdentityUser user)
-    {
-        int id = int.Parse(data);
-        if (SingleGameInstance[id].PlayerTwoId == user.Id)
+
+        if (SignedToGameId != 0)
         {
-            SingleGameInstance[id].PlayerTwoId = null;
-            SingleGameInstance[id].PlayerTwo = null;
-            AvailableGamesList[id].Remove(webSocket);
+            await LeaveSession(webSocket, SignedToGameId);
         }
-    }
-    private async Task DeleteSession(string data, IdentityUser user)
-    {
-        int id = int.Parse(data);
-        if (SingleGameInstance[id].PlayerOneId == user.Id)
-        {
-            SingleGameInstance.Remove(id);
-            AvailableGamesList.Remove(id);
-        }
+        await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
     }
 
-    private async Task StartSession(WebSocket webSocket, string data, IdentityUser user)
+    private async Task<int> JoinSession(WebSocket webSocket, string data, IdentityUser user, int SignedToGameId, int OwnedGameId)
     {
-        int id = int.Parse(data);
-        if (SingleGameInstance[id].PlayerOneId == user.Id &&
-            SingleGameInstance[id].PlayerTwoId != null &&
-            SingleGameInstance[id].PlayerTwoId != user.Id)
-        {
-            CreateNewGameModelInput gameOptions = new CreateNewGameModelInput
-            {
-                playerTeamWhite = SingleGameInstance[id].PlayerOneId,
-                playerTeamBlack = SingleGameInstance[id].PlayerTwoId,
-                firstTeam = TeamEnum.White
-            };
-            GameDataSimpleModelOutput game = await _gameInstanceService.Create(gameOptions);
-            BroadcastToPlayers(id, game.Id.ToString());
-            DeleteSession(data, user);
-        }
-    }
+        if (SignedToGameId != 0)
+            if (!AvailableGamesList.ContainsKey(SignedToGameId))
+                SignedToGameId = 0;
 
-    private async Task CreateNewSession(WebSocket webSocket, IdentityUser user)
-    {
-        LobbyId++;
-        int id = LobbyId;
+        if (OwnedGameId != 0)
+            if (!AvailableGamesList.ContainsKey(OwnedGameId))
+                OwnedGameId = 0;
+
+        if (OwnedGameId != 0)
+        {
+            await SendDataToEndpoint(webSocket, "You cannot join another game while you own one", "error");
+            return SignedToGameId;
+        }
+
+        if (SignedToGameId != 0)
+        {
+            await SendDataToEndpoint(webSocket, "You are already signed to another game", "error");
+            return SignedToGameId;
+        }
+
+        if (string.IsNullOrEmpty(data)|| data == "NaN")
+        {
+            await SendDataToEndpoint(webSocket, "No ID selected", "error");
+            return SignedToGameId;
+        }
+
+        int id = int.Parse(data);
+
         if (!AvailableGamesList.ContainsKey(id))
         {
-            AvailableGamesList[id] = new List<WebSocket>();
+            await SendDataToEndpoint(webSocket, "Game do not Exist!", "error");
+            return SignedToGameId;
         }
-        AvailableGamesList[id].Add(webSocket);
+
+        if (GamesInLobby[id].PlayerTwoId == null && GamesInLobby[id].PlayerOneId != user.Id)
+        {
+            GamesInLobby[id].PlayerTwo = user.UserName;
+            GamesInLobby[id].PlayerTwoId = user.Id;
+            AvailableGamesList[id].Add(webSocket);
+            BroadcastToViewers();
+            return id;
+        }
+        return SignedToGameId;
+    }
+    private async Task<int> LeaveSession(WebSocket webSocket, int SignedToGameId)
+    {
+        if (SignedToGameId == 0)
+        {
+            await SendDataToEndpoint(webSocket, "You are not signed to any game which can be leaved", "error");
+            return SignedToGameId;
+        }
+        else
+        {
+            GamesInLobby[SignedToGameId].PlayerTwoId = null;
+            GamesInLobby[SignedToGameId].PlayerTwo = null;
+            AvailableGamesList[SignedToGameId].Remove(webSocket);
+            BroadcastToViewers();
+            return 0;
+        }
+    }
+    private async Task<int> DeleteSession(WebSocket webSocket, int OwnedGameId)
+    {
+        if (OwnedGameId == 0)
+        {
+            await SendDataToEndpoint(webSocket, "You are not the owner of any game", "error");
+            return OwnedGameId;
+        }
+        else
+        {
+            GamesInLobby.Remove(OwnedGameId);
+            AvailableGamesList.Remove(OwnedGameId);
+            BroadcastToViewers();
+            return 0;
+        }
+    }
+
+    private async Task<int> StartSession(WebSocket webSocket, IdentityUser user, int OwnedGameId)
+    {
+        if (OwnedGameId == 0)
+        {
+            await SendDataToEndpoint(webSocket, "You are not the owner of any game which can be started", "error");
+            return OwnedGameId;
+        }
+        else
+        {
+            if (GamesInLobby[OwnedGameId].PlayerOneId == user.Id &&
+                GamesInLobby[OwnedGameId].PlayerTwoId != null &&
+                GamesInLobby[OwnedGameId].PlayerTwoId != user.Id)
+            {
+                CreateNewGameModelInput gameOptions = new CreateNewGameModelInput
+                {
+                    playerTeamWhite = GamesInLobby[OwnedGameId].PlayerOneId,
+                    playerTeamBlack = GamesInLobby[OwnedGameId].PlayerTwoId,
+                    firstTeam = TeamEnum.White
+                };
+                GameDataSimpleModelOutput game = await _gameInstanceService.Create(gameOptions);
+                BroadcastToPlayers(OwnedGameId, game.Id.ToString());
+                DeleteSession(webSocket, OwnedGameId);
+                BroadcastToViewers();
+                return 0;
+            }
+            await SendDataToEndpoint(webSocket, "You have to find second Player!", "error");
+            return OwnedGameId;
+        }
+    }
+
+    private async Task<int> CreateNewSession(WebSocket webSocket, IdentityUser user, int OwnedGameId, int SignedToGameId)
+    {
+        if (OwnedGameId != 0)
+            if (!AvailableGamesList.ContainsKey(OwnedGameId))
+                OwnedGameId = 0;
+
+        if (SignedToGameId != 0)
+            if (!AvailableGamesList.ContainsKey(SignedToGameId))
+                SignedToGameId = 0;
+
+        if (OwnedGameId != 0)
+        {
+            await SendDataToEndpoint(webSocket, "You already have your own game", "error");
+            return OwnedGameId;
+        }
+
+        if (SignedToGameId != 0)
+        {
+            await SendDataToEndpoint(webSocket, "You cannot create new game, while you are sign to another", "error");
+            return OwnedGameId;
+        }
+
+        LobbyId++;
+        int newGameId = LobbyId;
+        if (!AvailableGamesList.ContainsKey(newGameId))
+        {
+            AvailableGamesList[newGameId] = new List<WebSocket>();
+        }
+        AvailableGamesList[newGameId].Add(webSocket);
         var game = new LobbyInfoModelOutput
         {
             Id = LobbyId,
             PlayerOneId = user.Id,
             PlayerOne = user.UserName
         };
-        SingleGameInstance[id] = game;
+        GamesInLobby[newGameId] = game;
 
-        var message = JsonConvert.SerializeObject(id);
-        await SendLobbyData(webSocket, message);
-    }
-    private async Task HandleUnknownActionAsync(WebSocket webSocket)
-    {
-        var response = Encoding.UTF8.GetBytes("{\"error\": \"Unknown action\"}");
-        await webSocket.SendAsync(new ArraySegment<byte>(response), WebSocketMessageType.Text, true, CancellationToken.None);
+        var message = JsonConvert.SerializeObject(newGameId);
+        await SendDataToEndpoint(webSocket, message, "ownedGameId");
+        BroadcastToViewers();
+        return newGameId;
+
     }
 
     private async Task BroadcastToPlayers(int gameId, string message)
@@ -182,7 +265,7 @@ public class LobbyService : ILobbyService
                 if (connection != null)
                     if (connection.State == WebSocketState.Open)
                     {
-                        await SendNewGameId(connection, message);
+                        await SendDataToEndpoint(connection, message, "newGameId");
                     }
             }
         }
@@ -198,28 +281,16 @@ public class LobbyService : ILobbyService
                 }
         }
     }
-    private async Task SendNewGameId(WebSocket webSocket, string message)
+    private async Task SendDataToEndpoint(WebSocket webSocket, string message, string title)
     {
         var dataToSend = new
         {
-            action = "newGameId",
+            action = title,
             Data = message
         };
         var gameInfoJson = JsonConvert.SerializeObject(dataToSend);
         var gameInfoBuffer = Encoding.UTF8.GetBytes(gameInfoJson);
 
-        await webSocket.SendAsync(new ArraySegment<byte>(gameInfoBuffer), WebSocketMessageType.Text, true, CancellationToken.None);
-    }
-
-    private async Task SendLobbyData(WebSocket webSocket, string message)
-    {
-        var dataToSend = new
-        {
-            action = "lobbyUpdate",
-            Data = message
-        };
-        var gameInfoJson = JsonConvert.SerializeObject(dataToSend);
-        var gameInfoBuffer = Encoding.UTF8.GetBytes(gameInfoJson);
         await webSocket.SendAsync(new ArraySegment<byte>(gameInfoBuffer), WebSocketMessageType.Text, true, CancellationToken.None);
     }
 

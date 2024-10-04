@@ -1,17 +1,13 @@
-import { Button, TextField } from "@mui/material";
+import { Button} from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { useForm } from 'react-hook-form';
 import { useState, useEffect, useRef } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { jwtDecode } from "jwt-decode";
 
 const Home = () => {
-    const GameOption = { playerTeamWhite: 'P1', playerTeamBlack: 'P2', firstTeam: 0 };
     const navigate = useNavigate();
-    const { register, getValues } = useForm();
     const [isWsOpen, setIsWsOpen] = useState(false);
     const wsRef = useRef(null);
-    const [lobby, setLobby] = useState([]);
     const [selectedId, setSelectedId] = useState([]);
     const token = localStorage.getItem('token');
     const decodedToken = jwtDecode(localStorage.getItem('token'))
@@ -31,9 +27,9 @@ const Home = () => {
 
             wsRef.current.onmessage = (event) => {
                 const newData = JSON.parse(event.data);
-                if (newData.action == 'lobbyUpdate' && newData.Data != null) {
-                    const lobbyArray = Object.values(JSON.parse(newData.Data));
-                    setLobby(lobbyArray);
+                console.log(newData)
+                if (newData.action == 'lobbyUpdate') {
+                    const lobbyArray = newData.Data != null ? Object.values(JSON.parse(newData.Data)) : [];
                     remapData(lobbyArray);
                 }
                 if (newData.action == 'newGameId') {

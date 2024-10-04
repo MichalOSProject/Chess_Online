@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Box, TextField, Button } from "@mui/material";
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import { Link} from "react-router-dom";
 
 const Login = () => {
     const { register, handleSubmit, getValues, formState: { errors } } = useForm();
@@ -25,11 +26,9 @@ const Login = () => {
                 });
             }
             return response.json();
-        }).then(data => {
-            const { token } = data;
-            localStorage.setItem('token', token);
+        }).then(() => {
             setErrorText(null)
-            navigate('/',);
+            navigate('/login',);
         }).catch(error => {
             setErrorText(error.message)
         });
@@ -95,6 +94,8 @@ const Login = () => {
                     Register
                 </Button>
             </Box>
+            <br />
+            <Link to='/login'><h3>Have an account, log in!</h3></Link>
         </div>
     );
 };
