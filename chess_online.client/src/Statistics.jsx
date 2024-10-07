@@ -1,4 +1,4 @@
-import { Button, TextField} from "@mui/material";
+import { Button, TextField } from "@mui/material";
 import { useState, useEffect } from 'react';
 import { jwtDecode } from "jwt-decode";
 
@@ -55,93 +55,108 @@ const Statistics = () => {
     }
 
     return (
-        <div>
-            <h1>{decodedToken.sub}, Check your account Statistics!</h1>
-            <h2>or yours friends!</h2>
+        <div className="body">
+            <header className="header">
+                <h1>{decodedToken.sub}, Check your account Statistics!</h1>
+            </header>
+            <div className="stats-container">
+                <h2>or yours friends!</h2>
                 <TextField
+                    className="input_textfield"
                     required
                     name="name"
                     label="Username"
                     value={playerUsername}
                     onChange={handleUsernameChange}
                 />
+
                 <Button
+                    className="default_button"
                     onClick={findPlayer}
                     variant="contained">
                     Find Player
-            </Button>
-            <br />
-            <br />
-                <TextField
-                    label="Username"
-                value={playerStats.username || ""}
-                    InputProps={{
-                        readOnly: true,
-                    }}
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                />
-                <TextField
-                    label="All Games"
-                value={playerStats.totalGames || 0}
-                    InputProps={{
-                        readOnly: true,
-                    }}
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                />
-                <TextField
-                    label="Ended Games"
-                value={playerStats.endedGames || 0}
-                    InputProps={{
-                        readOnly: true,
-                    }}
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                />
-                <TextField
-                    label="Won Games"
-                value={playerStats.winnings || 0}
-                    InputProps={{
-                        readOnly: true,
-                    }}
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                />
-                <TextField
-                    label="Lost Games"
-                value={playerStats.lostGames || 0}
-                    InputProps={{
-                        readOnly: true,
-                    }}
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                />
-                <TextField
-                    label="Games in White Team"
-                value={playerStats.gamesAsWhite || 0}
-                    InputProps={{
-                        readOnly: true,
-                    }}
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                />
-                <TextField
-                    label="Games in Black Team"
-                value={playerStats.gamesAsBlack || 0}
-                    InputProps={{
-                        readOnly: true,
-                    }}
-                    InputLabelProps={{
-                        shrink: true,
-                    }}
-                />
+                </Button>
+                <h2>Results:</h2>
+                <div className="onlyStats-container">
+                    <TextField
+                        className="default_textfield"
+                        label="Username"
+                        value={playerStats.username || ""}
+                        InputProps={{
+                            readOnly: true,
+                        }}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                    <TextField
+                        className="default_textfield"
+                        label="All Games"
+                        value={playerStats.totalGames || 0}
+                        InputProps={{
+                            readOnly: true,
+                        }}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                    <TextField
+                        className="default_textfield"
+                        label="Ended Games"
+                        value={playerStats.endedGames || 0}
+                        InputProps={{
+                            readOnly: true,
+                        }}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                    <TextField
+                        className="default_textfield"
+                        label="Won Games"
+                        value={playerStats.winnings || 0}
+                        InputProps={{
+                            readOnly: true,
+                        }}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                    <TextField
+                        className="default_textfield"
+                        label="Lost Games"
+                        value={playerStats.lostGames || 0}
+                        InputProps={{
+                            readOnly: true,
+                        }}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                    <TextField
+                        className="default_textfield"
+                        label="Games in White Team"
+                        value={playerStats.gamesAsWhite || 0}
+                        InputProps={{
+                            readOnly: true,
+                        }}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                    <TextField
+                        className="default_textfield"
+                        label="Games in Black Team"
+                        value={playerStats.gamesAsBlack || 0}
+                        InputProps={{
+                            readOnly: true,
+                        }}
+                        InputLabelProps={{
+                            shrink: true,
+                        }}
+                    />
+                </div>
+            </div>
         </div>
     );
 }

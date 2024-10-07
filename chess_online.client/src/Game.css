@@ -1,4 +1,10 @@
-﻿.button-container {
+﻿.body {
+    width: 100vw;
+    height:100vh;
+    background: purple;
+    margin: 0;
+}
+.button-container {
     width: 800px;
     height: 800px;
     display: flex;
@@ -6,6 +12,8 @@
     gap: 8px;
 }
 
-    .button-container > .MuiButton-root {
-        width: calc(12.5% - 8px);
-    }
+.header {
+    background: red;
+    height: 50px;
+    width: 100vw;
+}

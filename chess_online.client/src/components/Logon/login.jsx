@@ -37,17 +37,8 @@ const Login = () => {
     };
 
     return (
-        <div
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100vh',
-                padding: '1rem',
-                boxSizing: 'border-box'
-            }}
-        >
+        <div className="logonBody">
+        <div className="loginSection">
             <h1>Login to Chess World</h1>
 
             <h2 style={{ color: 'red' }}>{errorText != null ? errorText : ''}</h2>
@@ -89,6 +80,7 @@ const Login = () => {
             </Box>
             <br />
             <Link to='/register'><h3>Dont have an account? Sign Up!</h3></Link>
+            </div>
         </div>
     );
 };

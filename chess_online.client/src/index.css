@@ -1,0 +1,201 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    background: purple;
+    color: black;
+}
+
+.game {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.lobby {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    max-width: 700px;
+    margin: 0 auto;
+    border-radius: 8px;
+    border: 3px solid black !important;
+}
+
+.buttonPanel {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    background-color: black;
+    padding-bottom:5px;
+}
+
+.lobbyView {
+
+    align-items: center;
+    justify-content: center;
+    display: flex;
+    background-color: black;
+    margin: 0 auto;
+    width: fit-content;
+}
+
+.lobbyLeft {
+    width: 500px;
+    height: 600px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 0px;
+}
+
+.lobbyRight {
+    width: 200px;
+    height: 600px !important;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: flex-start;
+    background-color: darkgray;
+}
+
+body, h1 {
+    color: black;
+    font-weight: bold;
+}
+
+body, h2 {
+    color: black;
+    font-weight: bold;
+}
+
+.header {
+    position: static;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background-color: black;
+    color: white;
+    padding: 10px;
+    margin-bottom: 20px;
+}
+
+    .header h1 {
+        color: white;
+    }
+
+    .header h2 {
+        color: white;
+    }
+
+.selected-row {
+    border: 2px solid red;
+}
+
+    .selected-row .MuiDataGrid-cell {
+        background-color: red;
+    }
+
+.MuiDataGrid-columnHeader {
+    background-color: Black;
+    color: White;
+    font-weight: bold;
+    text-align: center;
+}
+
+.MuiDataGrid-root {
+    border: 2px solid black !important;
+    width: 500px;
+    height: 600px !important;
+    background-color: darkgray
+}
+
+.MuiDataGrid-cell {
+    background-color: lightgray;
+    border-color: red;
+}
+
+.logonBody {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loginSection {
+    border-style: solid;
+    border-radius: 5px;
+    width: 450px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: lightgray;
+    padding: 20px;
+}
+
+.button-container {
+    width: 800px;
+    height: 800px;
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    grid-template-rows: repeat(8, 1fr);
+    gap: 8px
+}
+
+.stats-container {
+    border-style: solid;
+    border-radius: 5px;
+    width: 350px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: lightgray;
+    margin: 0 auto;
+}
+
+.onlyStats-container {
+    border-style: solid;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: darkgray;
+    width: 250px;
+    margin: 0 auto;
+    margin: 10px;
+}
+
+.input_textfield {
+    margin: 5px !important;
+}
+
+    .input_textfield .MuiOutlinedInput-notchedOutline {
+        border-color: black;
+    }
+
+    .input_textfield .MuiInputBase-input {
+        color: black !important;
+        font-weight: bold;
+    }
+
+
+.default_textfield {
+    margin: 5px !important;
+}
+
+    .default_textfield .MuiOutlinedInput-notchedOutline {
+        border-color: black;
+    }
+
+.default_button {
+    color: black !important;
+    background-color: gray !important;
+    font-weight: bold !important;
+}
+

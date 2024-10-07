@@ -20,10 +20,7 @@ public class GameInstanceService : IGameInstanceService
     public async Task<GameDataSimpleModelOutput> GetGameInfoToSend(int gameId)
     {
         GameInstance _gameInstance = await GetCalculatedGameInstanceFromSQL(gameId);
-        Console.WriteLine("TEST5 " + _gameInstance.GameEnded);
-
         GameDataSimpleModelOutput gameDataSimpleModelOutput = await _dataConversionService.ShrinkGameInfoToSimple(_gameInstance);
-        Console.WriteLine("TEST6 " + gameDataSimpleModelOutput.GameEnded);
         return gameDataSimpleModelOutput;
     }
     public async Task<GameDataSimpleModelOutput> Create(CreateNewGameModelInput newGame)
@@ -133,12 +130,6 @@ public class GameInstanceService : IGameInstanceService
 
         return _gameInstance;
     }
-
-    //    szachmat:
-    //1. jest atakowany!
-    //2. czy ma gdzie uciec
-    //3. czy jeżeli tylko 1, czy można go zabić
-    //4. jak więcej to kaplica
     private GameInstance CheckMate(GameInstance _gameInstance)
     {
         if (!_gameInstance.GameEnded)
@@ -264,10 +255,8 @@ public class GameInstanceService : IGameInstanceService
     {
         foreach (var piece in Map)
         {
-
             if (piece.AttackOnKing && !piece.Team.Equals(KingTeam))
             {
-                Console.WriteLine("attacking: " + piece.PieceType + " dmgbW: " + piece.DamageByWhite + " dmgbW: " + piece.DamageByBlack);
                 if (piece.Team.Equals(TeamEnum.White))
                     return piece.DamageByBlack > 0 ? true : false;
                 else

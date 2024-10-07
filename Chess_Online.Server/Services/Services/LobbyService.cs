@@ -8,6 +8,7 @@ using System.Text;
 using Chess_Online.Server.Data.Entity;
 using Chess_Online.Server.Models.Pieces;
 using Microsoft.AspNetCore.Identity;
+using Chess_Online.Server.Models.ServiceObjectModels;
 
 namespace Chess_Online.Server.Services.Services;
 
@@ -17,7 +18,7 @@ public class LobbyService : ILobbyService
     private readonly IGameInstanceService _gameInstanceService;
     private readonly IAuthService _authService;
     private readonly UserManager<IdentityUser> _userManager;
-    private static readonly Dictionary<int, LobbyInfoModelOutput> GamesInLobby = new Dictionary<int, LobbyInfoModelOutput>();
+    private static readonly Dictionary<int, LobbyInfoServiceModel> GamesInLobby = new Dictionary<int, LobbyInfoServiceModel>();
     private static int LobbyId = 0;
     private static readonly Dictionary<int, List<WebSocket>> AvailableGamesList = new Dictionary<int, List<WebSocket>>();
     private static readonly List<WebSocket> ViewersList = new List<WebSocket>();
@@ -53,11 +54,9 @@ public class LobbyService : ILobbyService
                     case "newSession":
                         OwnedGameId = await CreateNewSession(webSocket, user, OwnedGameId, SignedToGameId);
                         break;
-
                     case "delSession":
                         OwnedGameId = await DeleteSession(webSocket, OwnedGameId);
                         break;
-
                     case "leaveSession":
                         SignedToGameId = await LeaveSession(webSocket, SignedToGameId);
                         break;
@@ -66,6 +65,9 @@ public class LobbyService : ILobbyService
                         break;
                     case "startSession":
                         OwnedGameId = await StartSession(webSocket, user, OwnedGameId);
+                        break;
+                    case "switchTeam":
+                        await SwitchTeamInSession(webSocket, OwnedGameId);
                         break;
                     case "getLobby":
                         await GetLobbyInfo(webSocket);
@@ -81,11 +83,46 @@ public class LobbyService : ILobbyService
         CloseSession(webSocket, result, OwnedGameId, SignedToGameId);
     }
 
+    private async Task SwitchTeamInSession(WebSocket webSocket, int OwnedGameId)
+    {
+        if (OwnedGameId == 0)
+            await SendDataToEndpoint(webSocket, "You are not the owner of any game", "error");
+        else
+        {
+            GamesInLobby[OwnedGameId].SwitchedTeam = !GamesInLobby[OwnedGameId].SwitchedTeam;
+            BroadcastToViewers();
+        }
+    }
     private async Task GetLobbyInfo(WebSocket webSocket)
     {
-        var message = GamesInLobby.Any() ? JsonConvert.SerializeObject(GamesInLobby) : null;
-        await SendDataToEndpoint(webSocket, message, "lobbyUpdate");
+        if (GamesInLobby.Any())
+        {
+            Dictionary<int, LobbyInfoModelOutput> GamesInLobbyOutput = new Dictionary<int, LobbyInfoModelOutput>();
+
+            foreach (var item in GamesInLobby.Values)
+            {
+                var lobbyOutput = new LobbyInfoModelOutput
+                {
+                    Id = item.Id,
+                    Owner = item.PlayerOne,
+                    PlayerOne = item.SwitchedTeam ? item.PlayerTwo : item.PlayerOne,
+                    PlayerTwo = item.SwitchedTeam ? item.PlayerOne : item.PlayerTwo,
+                    SwitchedTeam = item.SwitchedTeam
+                };
+
+                GamesInLobbyOutput.Add(item.Id, lobbyOutput);
+            }
+
+            var message = JsonConvert.SerializeObject(GamesInLobbyOutput);
+
+            await SendDataToEndpoint(webSocket, message, "lobbyUpdate");
+        }
+        else
+        {
+            await SendDataToEndpoint(webSocket, null, "lobbyUpdate");
+        }
     }
+
     private async Task CloseSession(WebSocket webSocket, WebSocketReceiveResult result, int OwnedGameId, int SignedToGameId)
     {
         ViewersList.Remove(webSocket);
@@ -124,7 +161,7 @@ public class LobbyService : ILobbyService
             return SignedToGameId;
         }
 
-        if (string.IsNullOrEmpty(data)|| data == "NaN")
+        if (string.IsNullOrEmpty(data) || data == "NaN")
         {
             await SendDataToEndpoint(webSocket, "No ID selected", "error");
             return SignedToGameId;
@@ -195,8 +232,8 @@ public class LobbyService : ILobbyService
             {
                 CreateNewGameModelInput gameOptions = new CreateNewGameModelInput
                 {
-                    playerTeamWhite = GamesInLobby[OwnedGameId].PlayerOneId,
-                    playerTeamBlack = GamesInLobby[OwnedGameId].PlayerTwoId,
+                    playerTeamWhite = GamesInLobby[OwnedGameId].SwitchedTeam ? GamesInLobby[OwnedGameId].PlayerTwoId : GamesInLobby[OwnedGameId].PlayerOneId,
+                    playerTeamBlack = GamesInLobby[OwnedGameId].SwitchedTeam ? GamesInLobby[OwnedGameId].PlayerOneId : GamesInLobby[OwnedGameId].PlayerTwoId,
                     firstTeam = TeamEnum.White
                 };
                 GameDataSimpleModelOutput game = await _gameInstanceService.Create(gameOptions);
@@ -239,11 +276,12 @@ public class LobbyService : ILobbyService
             AvailableGamesList[newGameId] = new List<WebSocket>();
         }
         AvailableGamesList[newGameId].Add(webSocket);
-        var game = new LobbyInfoModelOutput
+        var game = new LobbyInfoServiceModel
         {
             Id = LobbyId,
             PlayerOneId = user.Id,
-            PlayerOne = user.UserName
+            PlayerOne = user.UserName,
+            SwitchedTeam = false
         };
         GamesInLobby[newGameId] = game;
 

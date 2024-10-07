@@ -1,5 +1,5 @@
 import { Route, Routes } from 'react-router-dom';
-import Home from './Home.jsx';
+import Lobby from './Lobby.jsx';
 import Game from './Game.jsx';
 import Statistics from './Statistics.jsx'
 import NotFound from './notFound.jsx'
@@ -16,7 +16,7 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/Login" element={<Login />} />
                 <Route element={<SiteProtect />}>
-                    <Route path="/" element={<Home />} />
+                    <Route path="/" element={<Lobby />} />
                     <Route path="/Game" element={<Game />} />
                     <Route path="/Statistics" element={<Statistics />} />
                 </Route>

@@ -34,17 +34,8 @@ const Login = () => {
         });
     };
     return (
-        <div
-            style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                height: '100vh',
-                padding: '1rem',
-                boxSizing: 'border-box'
-            }}
-        >
+        <div className="logonBody">
+            <div className="loginSection">
             <h1>Create Account at Chess World</h1>
 
             <h2 style={{ color: 'red' }}>{errorText != null ? errorText : ''}</h2>
@@ -96,6 +87,7 @@ const Login = () => {
             </Box>
             <br />
             <Link to='/login'><h3>Have an account, log in!</h3></Link>
+            </div>
         </div>
     );
 };

@@ -64,7 +64,6 @@ namespace Chess_Online.Server.Services.Services
                             }
                             else
                             {
-                                Console.WriteLine("TEst4" + await _gameInstanceService.isEnded(IdOfGameInstance));
                                 var receivedMessage = System.Text.Json.JsonSerializer.Deserialize<MoveRequestModelInput>(jsonMessage);
                                 if (receivedMessage != null)
                                 {

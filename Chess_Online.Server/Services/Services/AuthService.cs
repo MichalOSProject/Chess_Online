@@ -57,7 +57,6 @@ public class AuthService : IAuthService
     public async Task<bool> ValidateToken(string token)
     {
         if (string.IsNullOrEmpty(token)) return false;
-        Console.WriteLine("token " + token);
         try
         {
             var tokenHandler = new JwtSecurityTokenHandler();

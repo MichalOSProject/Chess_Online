@@ -1,4 +1,4 @@
-import './Game.css';
+import './index.css';
 import { useEffect, useState, useRef } from 'react';
 import { Button } from "@mui/material";
 import { useLocation } from 'react-router-dom';
@@ -69,6 +69,7 @@ const Game = () => {
                 }
                 newButtons.push(
                     <Button
+                        className="chess_Button"
                         key={`${i}-${j}`}
                         onClick={() => Action(i, j)}
                         variant="contained"
@@ -121,15 +122,19 @@ const Game = () => {
     }
 
     return (
-        <div>
-            <h1>It is your Game#{location.state}, {decodedToken.sub}</h1>
-            <h2>Turn: Team {turn}</h2>
+        <div className = "body">
+            <header className="header">
+                <h1>It is your Game#{location.state}, {decodedToken.sub}</h1>
+            </header>
+            <div className="game">
+                <h2>Turn: Team {turn}</h2>
             <h2 style={{ color: 'red' }}>{gameEnded ? 'Game OVER!' : ''}</h2>
             <div className="button-container">
                 {buttonsMap}
+                </div>
             </div>
-
         </div>
+
     );
 }
 
