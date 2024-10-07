@@ -17,11 +17,13 @@ public class GameInstanceService : IGameInstanceService
         _context = context;
         _dataConversionService = dataConversionService;
     }
-    public async Task<GameDataSimpleModelOutput> GetGameInfo(int gameId)
+    public async Task<GameDataSimpleModelOutput> GetGameInfoToSend(int gameId)
     {
-        GameInstance _gameInstance = await GetGameInstance(gameId);
-        GameDataSimpleModelOutput gameDataSimpleModelOutput = await _dataConversionService.GetSimpleGameInfo(_gameInstance);
+        GameInstance _gameInstance = await GetCalculatedGameInstanceFromSQL(gameId);
+        Console.WriteLine("TEST5 " + _gameInstance.GameEnded);
 
+        GameDataSimpleModelOutput gameDataSimpleModelOutput = await _dataConversionService.ShrinkGameInfoToSimple(_gameInstance);
+        Console.WriteLine("TEST6 " + gameDataSimpleModelOutput.GameEnded);
         return gameDataSimpleModelOutput;
     }
     public async Task<GameDataSimpleModelOutput> Create(CreateNewGameModelInput newGame)
@@ -69,17 +71,22 @@ public class GameInstanceService : IGameInstanceService
 
         await _context.SaveChangesAsync();
 
-        return await GetGameInfo(gameInstance.Id);
+        return await GetGameInfoToSend(gameInstance.Id);
     }
-    public async Task<GameInstance> GetGameInstance(int id)
+    public async Task<GameInstance> GetCalculatedGameInstanceFromSQL(int id)
     {
         GameInstanceEntity gameInstanceEntity = _context.GameInstancesEntity.Include(game => game.ChessBoardMap).Where(game => game.Id == id).FirstOrDefault();
         GameInstance gameInstance = await _dataConversionService.ConvertSqlDataToGameInstance(gameInstanceEntity);
-        CheckPossibleMoves(gameInstance);
-        CheckMate(gameInstance);
+        gameInstance = CheckPossibleMoves(gameInstance);
         return gameInstance;
     }
-
+    public async Task<bool> isEnded(int id)
+    {
+        GameInstance _gameInstance = await GetCalculatedGameInstanceFromSQL(id);
+        GameInstanceEntity gameInstanceEntity = await _context.GameInstancesEntity.FindAsync(id);
+        await _context.Entry(gameInstanceEntity).ReloadAsync();
+        return gameInstanceEntity.GameEnded;
+    }
     public async Task<bool> isThisMyMove(int id, string userId)
     {
         GameInstanceEntity gameInstanceEntity = await _context.GameInstancesEntity.FindAsync(id);
@@ -110,7 +117,7 @@ public class GameInstanceService : IGameInstanceService
             return false;
         }
     }
-    public async Task<GameInstance> UpdateGameInstance(GameInstance _gameInstance)
+    public async Task<GameInstance> SaveGameToSQL(GameInstance _gameInstance)
     {
         _gameInstance = CheckPossibleMoves(_gameInstance);
         _gameInstance = CheckMate(_gameInstance);
@@ -126,25 +133,58 @@ public class GameInstanceService : IGameInstanceService
 
         return _gameInstance;
     }
+
+    //    szachmat:
+    //1. jest atakowany!
+    //2. czy ma gdzie uciec
+    //3. czy jeżeli tylko 1, czy można go zabić
+    //4. jak więcej to kaplica
     private GameInstance CheckMate(GameInstance _gameInstance)
     {
         if (!_gameInstance.GameEnded)
             for (int i = 0; i < 8; i++)
                 for (int j = 0; j < 8; j++)
                 {
-                    if (_gameInstance.Pieces[i, j].PieceType.Equals(PieceTypeEnum.King))
+                    if (_gameInstance.Pieces[i, j].PieceType.Equals(PieceTypeEnum.King)) //it is the King
                     {
-                        List<(int column, int row)> PossibleMoves = _gameInstance.Pieces[i, j].CheckedMoves;
+                        Piece King = _gameInstance.Pieces[i, j];
 
-                        if (_gameInstance.Pieces[i, j].Team.Equals(TeamEnum.White))
-                        {//For White Team King
-                            if (_gameInstance.Pieces[i, j].DamageByBlack > 0)
+                        if (King.Team.Equals(TeamEnum.White)) //For White's Team King
+                        {
+                            if (King.DamageByBlack > 0) //is King attacked?
                             {
-                                if (PossibleMoves.Any())
-                                {
-                                    _gameInstance.GameEnded = true;
+                                _gameInstance.CheckByBlack = CheckmateStatusEnum.Endangered;
+
+                                if (King.CheckedMoves.Count == 0)
+                                {//There is no escape
+                                    if (King.DamageByBlack == 1)
+                                    {
+                                        if (IsKingOponentKillable(_gameInstance.Pieces, King.Team)) //Checking the possibility of kill the assassin
+                                        {
+                                            _gameInstance.CheckByBlack = CheckmateStatusEnum.Endangered;
+                                            _gameInstance.GameEnded = false;
+                                            //King is attacked by one, killable assassin and the is no escape moves 
+                                        }
+                                        else
+                                        {
+                                            _gameInstance.CheckByBlack = CheckmateStatusEnum.Defeated;
+                                            _gameInstance.GameEnded = true;
+                                            //King is attacked by one, unkillable assassin and the is no escape moves 
+                                        }
+                                    }
+                                    else
+                                    {
+                                        //There is more than one assassin, with no escape
+                                        _gameInstance.CheckByBlack = CheckmateStatusEnum.Defeated;
+                                        _gameInstance.GameEnded = true;
+                                    }
+
+                                }
+                                else
+                                {// There is potential escape
                                     _gameInstance.CheckByBlack = CheckmateStatusEnum.Defeated;
-                                    foreach (var item in PossibleMoves)
+                                    _gameInstance.GameEnded = true;
+                                    foreach (var item in King.CheckedMoves)
                                     {
                                         if (_gameInstance.Pieces[item.column, item.row].DamageByBlack > 0)
                                             continue;
@@ -156,32 +196,47 @@ public class GameInstanceService : IGameInstanceService
                                         }
                                     }
                                 }
-                                else
-                                {
-                                    if (_gameInstance.Pieces[i, j].DamageByBlack >= 2)
-                                    {
-                                        _gameInstance.CheckByBlack = CheckmateStatusEnum.Defeated;
-                                        _gameInstance.GameEnded = true;
-                                    }
-                                    if (_gameInstance.CheckByBlack.Equals(CheckmateStatusEnum.Endangered))
-                                    {
-                                        _gameInstance.CheckByBlack = CheckmateStatusEnum.Defeated;
-                                        _gameInstance.GameEnded = true;
-                                    }
-                                    if (_gameInstance.CheckByBlack.Equals(CheckmateStatusEnum.Safe))
-                                        _gameInstance.CheckByBlack = CheckmateStatusEnum.Endangered;
-                                }
                             }
+                            else
+                                _gameInstance.CheckByBlack = CheckmateStatusEnum.Safe;
+                            //No one attack the King
                         }
-                        else
-                        { //For Black Team King
-                            if (_gameInstance.Pieces[i, j].DamageByWhite > 0)
+                        else //For Black's Team King
+                        {
+                            if (King.DamageByWhite > 0) //is King attacked?
                             {
-                                if (PossibleMoves.Any())
-                                {
-                                    _gameInstance.GameEnded = true;
+                                _gameInstance.CheckByWhite = CheckmateStatusEnum.Endangered;
+
+                                if (King.CheckedMoves.Count == 0)
+                                {//There is no escape
+                                    if (King.DamageByWhite == 1)
+                                    {
+                                        if (IsKingOponentKillable(_gameInstance.Pieces, King.Team)) //Checking the possibility of kill the assassin
+                                        {
+                                            _gameInstance.CheckByWhite = CheckmateStatusEnum.Endangered;
+                                            _gameInstance.GameEnded = false;
+                                            //King is attacked by one, killable assassin and the is no escape moves 
+                                        }
+                                        else
+                                        {
+                                            _gameInstance.CheckByWhite = CheckmateStatusEnum.Defeated;
+                                            _gameInstance.GameEnded = true;
+                                            //King is attacked by one, unkillable assassin and the is no escape moves 
+                                        }
+                                    }
+                                    else
+                                    {
+                                        //There is more than one assassin, with no escape
+                                        _gameInstance.CheckByWhite = CheckmateStatusEnum.Defeated;
+                                        _gameInstance.GameEnded = true;
+                                    }
+
+                                }
+                                else
+                                {// There is potential escape
                                     _gameInstance.CheckByWhite = CheckmateStatusEnum.Defeated;
-                                    foreach (var item in PossibleMoves)
+                                    _gameInstance.GameEnded = true;
+                                    foreach (var item in King.CheckedMoves)
                                     {
                                         if (_gameInstance.Pieces[item.column, item.row].DamageByWhite > 0)
                                             continue;
@@ -193,26 +248,34 @@ public class GameInstanceService : IGameInstanceService
                                         }
                                     }
                                 }
-                                else
-                                {
-                                    if (_gameInstance.Pieces[i, j].DamageByWhite >= 2)
-                                    {
-                                        _gameInstance.CheckByWhite = CheckmateStatusEnum.Defeated;
-                                        _gameInstance.GameEnded = true;
-                                    }
-                                    if (_gameInstance.CheckByWhite.Equals(CheckmateStatusEnum.Endangered))
-                                    {
-                                        _gameInstance.CheckByWhite = CheckmateStatusEnum.Defeated;
-                                        _gameInstance.GameEnded = true;
-                                    }
-                                    if (_gameInstance.CheckByWhite.Equals(CheckmateStatusEnum.Safe))
-                                        _gameInstance.CheckByWhite = CheckmateStatusEnum.Endangered;
-                                }
                             }
+                            else
+                                _gameInstance.CheckByWhite = CheckmateStatusEnum.Safe;
+                            //No one attack the King
+
                         }
                     }
+                    //It was not the KING
                 }
         return _gameInstance;
+    }
+
+    private bool IsKingOponentKillable(Piece[,] Map, TeamEnum KingTeam)
+    {
+        foreach (var piece in Map)
+        {
+
+            if (piece.AttackOnKing && !piece.Team.Equals(KingTeam))
+            {
+                Console.WriteLine("attacking: " + piece.PieceType + " dmgbW: " + piece.DamageByWhite + " dmgbW: " + piece.DamageByBlack);
+                if (piece.Team.Equals(TeamEnum.White))
+                    return piece.DamageByBlack > 0 ? true : false;
+                else
+                    return piece.DamageByWhite > 0 ? true : false;
+            }
+        }
+
+        return false;
     }
 
     private GameInstance CheckPossibleMoves(GameInstance _gameInstance)
@@ -221,6 +284,7 @@ public class GameInstanceService : IGameInstanceService
             for (int j = 0; j < 8; j++)
             {
                 _gameInstance.Pieces[i, j].ResetCheckedMoves();
+                _gameInstance.Pieces[i, j].ResetAttackOnKing();
                 _gameInstance.Pieces[i, j].ResetDamage();
             }
 
@@ -256,10 +320,10 @@ public class GameInstanceService : IGameInstanceService
                             break;
 
                         //If it is EmptyPiece, assign possible move
-                        if (WhosMoving.Equals(TeamEnum.White))
-                            _gameInstance.Pieces[column, row].SetDamageByWhite(1);
-                        else
-                            _gameInstance.Pieces[column, row].SetDamageByBlack(1);
+                        //if (WhosMoving.Equals(TeamEnum.White))
+                        //    _gameInstance.Pieces[column, row].SetDamageByWhite(1);
+                        //else
+                        //    _gameInstance.Pieces[column, row].SetDamageByBlack(1);
                         _gameInstance.Pieces[i, j].AddCheckedMoves(column, row);
                     }
                 }
@@ -278,26 +342,28 @@ public class GameInstanceService : IGameInstanceService
                         if (!IsCoordsAtMap(column, row))
                             continue;
 
-                        //If it is EmptyPiece, check next iterations
-                        if (_gameInstance.Pieces[column, row].Team.Equals(TeamEnum.NoMansLand))
-                            continue;
-
                         //If it is Ally, break "L" loop
                         if (_gameInstance.Pieces[column, row].Team.Equals(WhosMoving))
                             break;
 
-                        //If it is King, assign damage and break "L" loop beacause beating King is Illegal
+                        //Assign the damage
+                        if (WhosMoving.Equals(TeamEnum.White))
+                            _gameInstance.Pieces[column, row].SetDamageByWhite(1);
+                        else
+                            _gameInstance.Pieces[column, row].SetDamageByBlack(1);
+
+                        //If it is EmptyPiece, check next iterations
+                        if (_gameInstance.Pieces[column, row].Team.Equals(TeamEnum.NoMansLand))
+                            continue;
+
+                        //If it is a King
                         if (_gameInstance.Pieces[column, row].PieceType.Equals(PieceTypeEnum.King))
                         {
-                            if (WhosMoving.Equals(TeamEnum.White))
-                                _gameInstance.Pieces[column, row].SetDamageByWhite(1);
-                            else
-                                _gameInstance.Pieces[column, row].SetDamageByBlack(1);
+                            _gameInstance.Pieces[i, j].AttackOnKing = true;
                             break;
                         }
-
-                        //If it is Enemy, assign possible move, assign damage and break
-                        _gameInstance.Pieces[i, j].AddCheckedMoves(column, row);
+                        else //It is not a King
+                            _gameInstance.Pieces[i, j].AddCheckedMoves(column, row);
                         break;
                     }
                 }

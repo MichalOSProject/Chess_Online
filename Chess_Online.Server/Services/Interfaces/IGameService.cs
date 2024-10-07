@@ -2,7 +2,7 @@
 
 namespace Chess_Online.Server.Services.Interfaces
 {
-    public interface IGameActionService
+    public interface IGameService
     {
         Task GameAction(WebSocket webSocket, string token);
     }

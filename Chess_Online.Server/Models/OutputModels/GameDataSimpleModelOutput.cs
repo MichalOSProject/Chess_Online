@@ -13,6 +13,6 @@ public class GameDataSimpleModelOutput
     public bool GameEnded { get; set; }
     [Required]
     public TeamEnum PlayerTurn { get; set; }
-    public bool Error { get; set; }
-    public string message { get; set; }
+    public bool Warning { get; set; }
+    public string Message { get; set; }
 }

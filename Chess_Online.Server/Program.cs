@@ -19,6 +19,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     options.Password.RequireUppercase = true;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 6;
+    options.User.RequireUniqueEmail = true;
 })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
@@ -59,10 +60,11 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddScoped<IGameInstanceService, GameInstanceService>();
-builder.Services.AddScoped<IGameActionService, GameActionService>();
+builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IDataConversionService, DataConversionService>();
 builder.Services.AddScoped<IAuthService,AuthService>();
 builder.Services.AddScoped<ILobbyService, LobbyService>();
+builder.Services.AddScoped<IPlayerService, PlayerService>();
 
 var app = builder.Build();
 
@@ -81,7 +83,7 @@ app.UseWebSockets();
 
 app.MapGet("/api/GameWS", async (HttpContext context) =>
 {
-    var gameActionService = context.RequestServices.GetRequiredService<IGameActionService>();
+    var gameActionService = context.RequestServices.GetRequiredService<IGameService>();
 
     if (context.WebSockets.IsWebSocketRequest)
     {

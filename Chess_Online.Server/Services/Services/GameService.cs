@@ -12,14 +12,14 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Chess_Online.Server.Services.Services
 {
-    public class GameActionService : IGameActionService
+    public class GameService : IGameService
     {
         private readonly ApplicationDbContext _context;
         private readonly IGameInstanceService _gameInstanceService;
         private readonly IAuthService _authService;
         private static readonly Dictionary<int, List<WebSocket>> ActiveConnections = new Dictionary<int, List<WebSocket>>();
 
-        public GameActionService(ApplicationDbContext context, IGameInstanceService gameInstanceService, IAuthService authService)
+        public GameService(ApplicationDbContext context, IGameInstanceService gameInstanceService, IAuthService authService)
         {
             _context = context;
             _gameInstanceService = gameInstanceService;
@@ -62,22 +62,25 @@ namespace Chess_Online.Server.Services.Services
                                 }
                                 continue;
                             }
-
-                            var receivedMessage = System.Text.Json.JsonSerializer.Deserialize<MoveRequestModelInput>(jsonMessage);
-                            if (receivedMessage != null)
+                            else
                             {
-                                JwtTokens tokenJWT = await _authService.GetTokenAsync(token);
-                                if (await _gameInstanceService.isThisMyMove(IdOfGameInstance, tokenJWT.UserId))
+                                Console.WriteLine("TEst4" + await _gameInstanceService.isEnded(IdOfGameInstance));
+                                var receivedMessage = System.Text.Json.JsonSerializer.Deserialize<MoveRequestModelInput>(jsonMessage);
+                                if (receivedMessage != null)
                                 {
-                                    var actionResult = await MoveAction(receivedMessage, IdOfGameInstance, tokenJWT.UserId);
-                                    var confirmationMessage = JsonConvert.SerializeObject(actionResult.Item1);
-                                    await BroadcastToPlayers(IdOfGameInstance, confirmationMessage);
-                                }
-                                else
-                                {
-                                    await SendErrorMessage(webSocket, "It is not your turn!");
-                                }
+                                    JwtTokens tokenJWT = await _authService.GetTokenAsync(token);
+                                    if (await _gameInstanceService.isThisMyMove(IdOfGameInstance, tokenJWT.UserId))
+                                    {
+                                        var actionResult = await MoveAction(receivedMessage, IdOfGameInstance, tokenJWT.UserId);
+                                        var confirmationMessage = JsonConvert.SerializeObject(actionResult.Item1);
+                                        await BroadcastToPlayers(IdOfGameInstance, confirmationMessage, actionResult.Item2);
+                                    }
+                                    else
+                                    {
+                                        await SendErrorMessage(webSocket, "It is not your turn!");
+                                    }
 
+                                }
                             }
                         }
                         catch (System.Text.Json.JsonException)
@@ -98,10 +101,11 @@ namespace Chess_Online.Server.Services.Services
             }
         }
 
-        private async Task BroadcastToPlayers(int gameId, string message)
+        private async Task BroadcastToPlayers(int gameId, string message, bool warningStatus)
         {
-            GameDataSimpleModelOutput gameInfo = await _gameInstanceService.GetGameInfo(gameId);
-            gameInfo.message = message;
+            GameDataSimpleModelOutput gameInfo = await _gameInstanceService.GetGameInfoToSend(gameId);
+            gameInfo.Message = message;
+            gameInfo.Warning = warningStatus;
             string gameInfoJson = JsonConvert.SerializeObject(gameInfo);
             var dataToSend = new
             {
@@ -127,7 +131,7 @@ namespace Chess_Online.Server.Services.Services
 
         private async Task SendInitialData(WebSocket webSocket, int gameId)
         {
-            GameDataSimpleModelOutput gameInfo = await _gameInstanceService.GetGameInfo(gameId);
+            GameDataSimpleModelOutput gameInfo = await _gameInstanceService.GetGameInfoToSend(gameId);
             string gameInfoJson = JsonConvert.SerializeObject(gameInfo);
             var dataToSend = new
             {
@@ -155,7 +159,7 @@ namespace Chess_Online.Server.Services.Services
 
         public async Task<(string, bool)> MoveAction(MoveRequestModelInput requestData, int gameId, string userId)
         {
-            GameInstance _gameInstance = await _gameInstanceService.GetGameInstance(gameId);
+            GameInstance _gameInstance = await _gameInstanceService.GetCalculatedGameInstanceFromSQL(gameId); // game instance with map and calculated checkmates and possible moves
             if (_gameInstance == null)
                 return ("Game do not Exist", true);
 
@@ -169,9 +173,9 @@ namespace Chess_Online.Server.Services.Services
             if (_gameInstance.GameEnded)
             {
                 if (_gameInstance.CheckByWhite.Equals(CheckmateStatusEnum.Defeated))
-                    return ("Game is Over, Team White Won", false);
+                    return ("Game is Over, Team White Won", true);
                 else
-                    return ("Game is Over, Team Black Won", false);
+                    return ("Game is Over, Team Black Won", true);
             }
 
             // Make the move
@@ -183,27 +187,27 @@ namespace Chess_Online.Server.Services.Services
             _gameInstance.PlayerTurn = _gameInstance.PlayerTurn.Equals(TeamEnum.White) ? TeamEnum.Black : TeamEnum.White;
 
             // Recalculate checkmate stats and possible moves for next Player
-            _gameInstance = await _gameInstanceService.UpdateGameInstance(_gameInstance);
+            _gameInstance = await _gameInstanceService.SaveGameToSQL(_gameInstance);
 
             // Return result if game is over
             if (_gameInstance.GameEnded)
             {
                 if (_gameInstance.CheckByWhite.Equals(CheckmateStatusEnum.Defeated))
-                    return ("Game is Over, Team White Won", false);
+                    return ("Game is Over, Team White Won", true);
                 else
-                    return ("Game is Over, Team Black Won", false);
+                    return ("Game is Over, Team Black Won", true);
             }
 
             // Return warning if one of Kings are Endangered
             if (_gameInstance.PlayerTurn.Equals(TeamEnum.White))
             {
                 if (_gameInstance.CheckByBlack.Equals(CheckmateStatusEnum.Endangered))
-                    return ("White's Team King is Endangered", false);
+                    return ("White's Team King is Endangered", true);
             }
             else
             {
                 if (_gameInstance.CheckByWhite.Equals(CheckmateStatusEnum.Endangered))
-                    return ("Black's Team King is Endangered", false);
+                    return ("Black's Team King is Endangered", true);
             }
 
             return ("The move was made successfully", false);

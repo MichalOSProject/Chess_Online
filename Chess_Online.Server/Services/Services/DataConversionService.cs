@@ -9,7 +9,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Chess_Online.Server.Services.Services;
 public class DataConversionService : IDataConversionService
 {
-    public async Task<GameDataSimpleModelOutput> GetSimpleGameInfo(GameInstance gameInstance)
+    public async Task<GameDataSimpleModelOutput> ShrinkGameInfoToSimple(GameInstance gameInstance)
     {
         if (gameInstance == null) return null;
 

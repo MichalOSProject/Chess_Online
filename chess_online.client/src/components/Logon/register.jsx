@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Box, TextField, Button } from "@mui/material";
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { Link} from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const Login = () => {
     const { register, handleSubmit, getValues, formState: { errors } } = useForm();

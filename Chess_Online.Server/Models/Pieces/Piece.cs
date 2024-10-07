@@ -3,6 +3,7 @@
 public abstract class Piece
 {
     public Boolean Moved = false;
+    public Boolean AttackOnKing = false;
     public int[,] Moves { get; protected set; }
     public int[,] Attack { get; protected set; }
     public List<(int column,int row)>? CheckedMoves { get; private set; }
@@ -43,6 +44,9 @@ public abstract class Piece
     public virtual void ResetDamage() { 
         DamageByWhite = 0;
         DamageByBlack = 0;
+    }
+    public virtual void ResetAttackOnKing() {
+        AttackOnKing = false;
     }
     public virtual void AddCheckedMoves(int column,int row)
     {

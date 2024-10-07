@@ -18,7 +18,6 @@ const Home = () => {
             wsRef.current = new WebSocket(`wss://localhost:7038/api/lobby?token=${token}`);
 
             wsRef.current.onopen = async () => {
-                console.log("Connected to WebSocket server");
                 setIsWsOpen(true);
                 if (wsRef.current.readyState == 1) {
                     wsRef.current.send(JSON.stringify({ Action: "getLobby", Data: "" }));
@@ -27,13 +26,15 @@ const Home = () => {
 
             wsRef.current.onmessage = (event) => {
                 const newData = JSON.parse(event.data);
-                console.log(newData)
                 if (newData.action == 'lobbyUpdate') {
                     const lobbyArray = newData.Data != null ? Object.values(JSON.parse(newData.Data)) : [];
                     remapData(lobbyArray);
                 }
                 if (newData.action == 'newGameId') {
                     navigate('/Game', { state: parseInt(newData.Data) });
+                }
+                if (newData.action == 'error') {
+                    alert(newData.Data)
                 }
             };
         }
@@ -68,6 +69,10 @@ const Home = () => {
     }
     const startGame = () => {
         wsRef.current.send(JSON.stringify({ Action: "startSession", Data: selectedId.toString() }));
+    }
+
+    const goToStats = () => {
+        navigate('/statistics',);
     }
 
     const handleRowSelection = (newSelection) => {
@@ -126,6 +131,11 @@ const Home = () => {
                 }}
                 pageSizeOptions={[5, 10, 15]}
             />
+            <Button
+                onClick={goToStats}
+                variant="contained">
+                Check your Statistics!
+            </Button>
         </div>
     );
 }

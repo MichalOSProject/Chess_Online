@@ -7,6 +7,7 @@ import { jwtDecode } from "jwt-decode";
 const Game = () => {
     const [mapData, setMapData] = useState([]);
     const [turn, setTurn] = useState([]);
+    const [gameEnded, setGameEnded] = useState(false);
     const [buttonsMap, setButtonsMap] = useState([]);
     let possibleMoves = [];
     let movingPieceCoords = [];
@@ -20,20 +21,26 @@ const Game = () => {
         if (!isWsOpen) {
             wsRef.current = new WebSocket(`wss://localhost:7038/api/GameWS?token=${token}`);
 
-            wsRef.current.onopen = async() => {
+            wsRef.current.onopen = async () => {
                 console.log("Connected to WebSocket server");
                 setIsWsOpen(true);
                 if (wsRef.current.readyState == 1)
-                wsRef.current.send(JSON.stringify({ gameId: location.state }));
+                    wsRef.current.send(JSON.stringify({ gameId: location.state }));
             };
 
             wsRef.current.onmessage = (event) => {
                 const newData = JSON.parse(event.data);
+
                 if (newData.action == 'gameUpdate' && newData.Data != null) {
                     const gameData = JSON.parse(newData.Data)
+                    console.log(gameData)
                     setMapData(gameData.Pieces)
                     setTurn(gameData.PlayerTurn)
+                    setGameEnded(gameData.GameEnded)
+                    if (gameData.Warning)
+                        alert(gameData.Message)
                 }
+
                 if (newData.action == 'errorMessage') {
                     alert(newData.Data)
                 }
@@ -90,7 +97,7 @@ const Game = () => {
         }
         else {
             possibleMoves.forEach((item) => {
-                if (item.Item1 == i && item.Item2 == j) {
+                if (item.Item1 == i && item.Item2 == j && !gameEnded) {
                     sendMotionRequest(movingPieceCoords, { i, j })
                 }
             })
@@ -117,7 +124,7 @@ const Game = () => {
         <div>
             <h1>It is your Game#{location.state}, {decodedToken.sub}</h1>
             <h2>Turn: Team {turn}</h2>
-
+            <h2 style={{ color: 'red' }}>{gameEnded ? 'Game OVER!' : ''}</h2>
             <div className="button-container">
                 {buttonsMap}
             </div>

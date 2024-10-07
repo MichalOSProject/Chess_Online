@@ -6,7 +6,7 @@ using Chess_Online.Server.Models.Pieces;
 namespace Chess_Online.Server.Services.Interfaces;
 public interface IDataConversionService
 {
-    Task<GameDataSimpleModelOutput> GetSimpleGameInfo(GameInstance gameInstance);
+    Task<GameDataSimpleModelOutput> ShrinkGameInfoToSimple(GameInstance gameInstance);
     Task<GameInstance> ConvertSqlDataToGameInstance(GameInstanceEntity gameInstanceEntity);
     Task<GameInstanceEntity> ConvertGameInstanceToSqlData(GameInstance gameInstance);
     Task<Piece[,]> BoardToArray(ChessBoard chessBoardMap);

@@ -17,6 +17,10 @@ namespace Chess_Online.Server.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<IdentityUser>()
+                .HasIndex(x => x.UserName)
+                .IsUnique();
+
             base.OnModelCreating(modelBuilder);
         }
     }
