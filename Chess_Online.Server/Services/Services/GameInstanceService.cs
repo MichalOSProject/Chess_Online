@@ -73,6 +73,7 @@ public class GameInstanceService : IGameInstanceService
     public async Task<GameInstance> GetCalculatedGameInstanceFromSQL(int id)
     {
         GameInstanceEntity gameInstanceEntity = _context.GameInstancesEntity.Include(game => game.ChessBoardMap).Where(game => game.Id == id).FirstOrDefault();
+        await _context.Entry(gameInstanceEntity).ReloadAsync();
         GameInstance gameInstance = await _dataConversionService.ConvertSqlDataToGameInstance(gameInstanceEntity);
         gameInstance = CheckPossibleMoves(gameInstance);
         return gameInstance;

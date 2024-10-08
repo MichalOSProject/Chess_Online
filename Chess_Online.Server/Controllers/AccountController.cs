@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Chess_Online.Server.Models.InputModels;
 using Microsoft.AspNetCore.Authorization;
 using Chess_Online.Server.Services.Interfaces;
+using Chess_Online.Server.Data.Entity;
 
 namespace Chess_Online.Server.Controllers
 {
@@ -10,13 +11,13 @@ namespace Chess_Online.Server.Controllers
     [Route("api/[controller]")]
     public class AccountController : Controller
     {
-        private readonly UserManager<IdentityUser> _userManager;
+        private readonly UserManager<ApplicationUser> _userManager;
         private readonly IAuthService _authService;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly SignInManager<ApplicationUser> _signInManager;
 
         public AccountController(
-            UserManager<IdentityUser> userManager,
-            SignInManager<IdentityUser> signInManager,
+            UserManager<ApplicationUser> userManager,
+            SignInManager<ApplicationUser> signInManager,
             IAuthService authService)
         {
             _userManager = userManager;
@@ -28,7 +29,7 @@ namespace Chess_Online.Server.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody] registerUserModelInput model)
         {
-            var user = new IdentityUser { UserName = model.Username, Email = model.Email };
+            var user = new ApplicationUser { UserName = model.Username, Email = model.Email };
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {

@@ -6,7 +6,7 @@ namespace Chess_Online.Server.Services.Interfaces
 {
     public interface IAuthService
     {
-        Task<string> GenerateTokenAsync(IdentityUser user);
+        Task<string> GenerateTokenAsync(ApplicationUser user);
         Task<bool> ValidateToken(string token);
         Task<JwtTokens> GetTokenAsync(string token);
     }

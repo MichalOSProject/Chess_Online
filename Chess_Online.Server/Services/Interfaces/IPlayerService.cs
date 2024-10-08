@@ -6,4 +6,6 @@ namespace Chess_Online.Server.Services.Interfaces;
 public interface IPlayerService
 {
     Task<PlayerStats> GetPlayerStats(string username);
+    Task<string> UploadProfilePicture(IFormFile file, string userId);
+    Task<string> GetProfilePicture(string username);
 }

@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Identity;
 
 namespace Chess_Online.Server.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<IdentityUser>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
@@ -17,7 +17,7 @@ namespace Chess_Online.Server.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<IdentityUser>()
+            modelBuilder.Entity<ApplicationUser>()
                 .HasIndex(x => x.UserName)
                 .IsUnique();
 

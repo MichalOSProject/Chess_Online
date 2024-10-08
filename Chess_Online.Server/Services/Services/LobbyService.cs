@@ -17,13 +17,13 @@ public class LobbyService : ILobbyService
     private readonly ApplicationDbContext _context;
     private readonly IGameInstanceService _gameInstanceService;
     private readonly IAuthService _authService;
-    private readonly UserManager<IdentityUser> _userManager;
+    private readonly UserManager<ApplicationUser> _userManager;
     private static readonly Dictionary<int, LobbyInfoServiceModel> GamesInLobby = new Dictionary<int, LobbyInfoServiceModel>();
     private static int LobbyId = 0;
     private static readonly Dictionary<int, List<WebSocket>> AvailableGamesList = new Dictionary<int, List<WebSocket>>();
     private static readonly List<WebSocket> ViewersList = new List<WebSocket>();
 
-    public LobbyService(ApplicationDbContext context, IGameInstanceService gameInstanceService, IAuthService authService, UserManager<IdentityUser> userManager)
+    public LobbyService(ApplicationDbContext context, IGameInstanceService gameInstanceService, IAuthService authService, UserManager<ApplicationUser> userManager)
     {
         _context = context;
         _gameInstanceService = gameInstanceService;

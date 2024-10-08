@@ -7,6 +7,10 @@ import { jwtDecode } from "jwt-decode";
 const Game = () => {
     const [mapData, setMapData] = useState([]);
     const [turn, setTurn] = useState([]);
+    const [isInverted, setIsInverted] = useState(false);
+    const [playerPhotoURL, setPlayerPhotoURL] = useState("");
+    const [oponentUsername, setOponentUsername] = useState("");
+    const [oponentPhotoURL, setOponentPhotoURL] = useState("");
     const [gameEnded, setGameEnded] = useState(false);
     const [buttonsMap, setButtonsMap] = useState([]);
     let possibleMoves = [];
@@ -37,6 +41,17 @@ const Game = () => {
                     setMapData(gameData.Pieces)
                     setTurn(gameData.PlayerTurn)
                     setGameEnded(gameData.GameEnded)
+                    setIsInverted(gameData.TeamBlack == decodedToken.sub)
+                    if (oponentUsername == "")
+                        if (gameData.TeamBlack == decodedToken.sub) {
+                            setOponentUsername(gameData.TeamWhite)
+                            fetchProfilePhoto(gameData.TeamWhite)
+                        }
+                        else {
+                            setOponentUsername(gameData.TeamBlack)
+                            fetchProfilePhoto(gameData.TeamBlack)
+                        }
+
                     if (gameData.Warning)
                         alert(gameData.Message)
                 }
@@ -54,35 +69,105 @@ const Game = () => {
         }
     }, [mapData]);
 
+    const fetchProfilePhoto = async (oponentName) => {
+        fetch(`https://localhost:7038/api/Player/getProfilePhoto?username=${decodedToken.sub}`, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        }).then(response => {
+            if (!response.ok) {
+                return response.text().then(errorData => {
+                    throw new Error(errorData);
+                });
+            }
+            return response.text();
+        }).then(data => {
+            setPlayerPhotoURL(data)
+        }).catch(error => {
+            console.log(error.message)
+        });
+        fetch(`https://localhost:7038/api/Player/getProfilePhoto?username=${oponentName}`, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        }).then(response => {
+            if (!response.ok) {
+                return response.text().then(errorData => {
+                    throw new Error(errorData);
+                });
+            }
+            return response.text();
+        }).then(data => {
+            setOponentPhotoURL(data)
+        }).catch(error => {
+            console.log(error.message)
+        });
+    };
 
     const updateButtons = (checkedMoves) => {
         const newButtons = [];
-        for (let i = 0; i < 8; i++) {
-            for (let j = 0; j < 8; j++) {
-                let coordsColor = (i % 2 === j % 2) ? 'Black' : 'White';
-                if (checkedMoves) {
-                    checkedMoves.forEach((item) => {
-                        if (item.Item1 == i && item.Item2 == j) {
-                            coordsColor = 'Gray';
-                        }
-                    });
+        if (isInverted) {
+            for (let i = 7; i >= 0; i--) {
+                for (let j = 7; j >= 0; j--) {
+                    let coordsColor = (i % 2 === j % 2) ? 'Black' : 'White';
+                    if (checkedMoves) {
+                        checkedMoves.forEach((item) => {
+                            if (item.Item1 == i && item.Item2 == j) {
+                                coordsColor = 'Gray';
+                            }
+                        });
+                    }
+                    newButtons.push(
+                        <Button
+                            className="chess_Button"
+                            key={`${i}-${j}`}
+                            onClick={() => Action(i, j)}
+                            variant="contained"
+                            sx={{
+                                backgroundImage: `url(${GetPieceTexture(mapData[i][j].PieceType, mapData[i][j].Team)})`,
+                                backgroundSize: 'contain',
+                                backgroundPosition: 'center',
+                                backgroundRepeat: 'no-repeat',
+                                backgroundColor: coordsColor,
+                            }}
+                        />
+                    );
                 }
-                newButtons.push(
-                    <Button
-                        className="chess_Button"
-                        key={`${i}-${j}`}
-                        onClick={() => Action(i, j)}
-                        variant="contained"
-                        sx={{
-                            backgroundImage: `url(${GetPieceTexture(mapData[i][j].PieceType, mapData[i][j].Team)})`,
-                            backgroundSize: 'contain',
-                            backgroundPosition: 'center',
-                            backgroundRepeat: 'no-repeat',
-                            backgroundColor: coordsColor,
-                        }}
-                    />
-                );
             }
+        }
+        else {
+            for (let i = 0; i < 8; i++) {
+                for (let j = 0; j < 8; j++) {
+                    let coordsColor = (i % 2 === j % 2) ? 'Black' : 'White';
+                    if (checkedMoves) {
+                        checkedMoves.forEach((item) => {
+                            if (item.Item1 == i && item.Item2 == j) {
+                                coordsColor = 'Gray';
+                            }
+                        });
+                    }
+                    newButtons.push(
+                        <Button
+                            className="chess_Button"
+                            key={`${i}-${j}`}
+                            onClick={() => Action(i, j)}
+                            variant="contained"
+                            sx={{
+                                backgroundImage: `url(${GetPieceTexture(mapData[i][j].PieceType, mapData[i][j].Team)})`,
+                                backgroundSize: 'contain',
+                                backgroundPosition: 'center',
+                                backgroundRepeat: 'no-repeat',
+                                backgroundColor: coordsColor,
+                            }}
+                        />
+                    );
+                }
+            }
+
         }
         setButtonsMap(newButtons);
     };
@@ -122,15 +207,35 @@ const Game = () => {
     }
 
     return (
-        <div className = "body">
+        <div className="body">
             <header className="header">
-                <h1>It is your Game#{location.state}, {decodedToken.sub}</h1>
+                <h1>Game #{location.state}</h1>
             </header>
             <div className="game">
-                <h2>Turn: Team {turn}</h2>
-            <h2 style={{ color: 'red' }}>{gameEnded ? 'Game OVER!' : ''}</h2>
-            <div className="button-container">
-                {buttonsMap}
+                <div className="GameBanner">
+                    <div className="MyBanner">
+                        {playerPhotoURL ? (
+                            <img src={playerPhotoURL} alt="Profile" className="playerPhoto" />
+                        ) : (
+                            <p>No profile picture found.</p>
+                        )}
+                        <div className="nickname">{decodedToken.sub}</div>
+                    </div>
+                    <div className="InfoBanner">
+                        <div className="TurnInfo">Turn: Team {turn}</div>
+                        <h2 style={{ color: 'red' }}>{gameEnded ? 'Game OVER!' : ''}</h2>
+                    </div>
+                    <div className="OponentBanner">
+                        <div className="nickname">{oponentUsername}</div>
+                        {oponentPhotoURL ? (
+                            <img src={oponentPhotoURL} alt="Profile" className="playerPhoto" />
+                        ) : (
+                            <p>No profile picture found.</p>
+                        )}
+                    </div>
+                </div>
+                <div className="button-container">
+                    {buttonsMap}
                 </div>
             </div>
         </div>

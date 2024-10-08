@@ -96,7 +96,7 @@ const Lobby = () => {
         wsRef.current.send(JSON.stringify({ Action: "startSession", Data: "" }));
     }
     const goToStats = () => {
-        navigate('/statistics',);
+        navigate('/profile',);
     }
     const logout = () => {
         localStorage.removeItem('token');
@@ -120,7 +120,7 @@ const Lobby = () => {
                     className="default_button"
                     onClick={goToStats}
                     variant="contained">
-                    Check your Statistics!
+                    Profile
                 </Button>
                 <Button
                     className="default_button"

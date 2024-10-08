@@ -5,10 +5,16 @@ using Chess_Online.Server.Services.Interfaces;
 using Chess_Online.Server.Models.OutputModels;
 using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Identity;
 
 namespace Chess_Online.Server.Services.Services;
 public class DataConversionService : IDataConversionService
 {
+    private readonly UserManager<ApplicationUser> _userManager;
+    public DataConversionService(UserManager<ApplicationUser> userManager)
+    {
+        _userManager = userManager;
+    }
     public async Task<GameDataSimpleModelOutput> ShrinkGameInfoToSimple(GameInstance gameInstance)
     {
         if (gameInstance == null) return null;
@@ -28,6 +34,8 @@ public class DataConversionService : IDataConversionService
             Pieces = gameMap,
             GameEnded = gameInstance.GameEnded,
             PlayerTurn = gameInstance.PlayerTurn,
+            TeamWhite = await _userManager.GetUserNameAsync(await _userManager.FindByIdAsync(gameInstance.PlayerTeamWhite)),
+            TeamBlack = await _userManager.GetUserNameAsync(await _userManager.FindByIdAsync(gameInstance.PlayerTeamBlack)),
         };
         return gameInfo;
     }

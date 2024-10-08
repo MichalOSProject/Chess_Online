@@ -15,4 +15,8 @@ public class GameDataSimpleModelOutput
     public TeamEnum PlayerTurn { get; set; }
     public bool Warning { get; set; }
     public string Message { get; set; }
+    [Required]
+    public string TeamWhite { get; set; }
+    [Required]
+    public string TeamBlack { get; set; }
 }

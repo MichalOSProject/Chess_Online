@@ -19,7 +19,7 @@ public class AuthService : IAuthService
         _context = context;
     }
 
-    public async Task<string> GenerateTokenAsync(IdentityUser user)
+    public async Task<string> GenerateTokenAsync(ApplicationUser user)
     {
         var claims = new[]
         {
