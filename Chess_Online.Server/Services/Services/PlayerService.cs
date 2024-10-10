@@ -141,5 +141,49 @@ namespace Chess_Online.Server.Services.Services
 
             return playerStats;
         }
+
+        public async Task<List<PlayerGame>> GetPlayerGamesList(string username)
+        {
+            if (string.IsNullOrEmpty(username))
+                return null;
+            ApplicationUser user = await _userManager.FindByNameAsync(username);
+
+            if (user == null)
+                return null;
+
+            List<PlayerGame> playerGamesList = new List<PlayerGame>();
+
+            GameInstanceEntity[] playerGames = _context.GameInstancesEntity
+                .Where(x => x.PlayerTeamWhite == user.Id || x.PlayerTeamBlack == user.Id)
+                .ToArray();
+
+            if (!playerGames.Any())
+                return null;
+
+            foreach (GameInstanceEntity game in playerGames)
+            {
+                PlayerGame singleGame = new PlayerGame();
+                singleGame.gameId = game.Id;
+                if (game.PlayerTeamWhite == user.Id)
+                {
+                    singleGame.oponentUsername = await _userManager.GetUserNameAsync(await _userManager.FindByIdAsync(game.PlayerTeamBlack));
+                    singleGame.playedAs = "White";
+                    singleGame.winner = game.CheckByWhite.Equals(CheckmateStatusEnum.Defeated) ? user.UserName : singleGame.oponentUsername;
+                }
+                else
+                {
+                    singleGame.oponentUsername = await _userManager.GetUserNameAsync(await _userManager.FindByIdAsync(game.PlayerTeamWhite));
+                    singleGame.playedAs = "Black";
+                    singleGame.winner = game.CheckByBlack.Equals(CheckmateStatusEnum.Defeated) ? user.UserName : singleGame.oponentUsername;
+                }
+                if (!game.GameEnded){
+                    singleGame.ended = false;
+                    singleGame.winner = "";
+                }
+
+                playerGamesList.Add(singleGame);
+            }
+            return playerGamesList;
+        }
     }
 }

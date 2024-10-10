@@ -61,5 +61,12 @@ namespace Chess_Online.Server.Controllers
 
             return $"{Request.Scheme}://{Request.Host}" + url;
         }
+
+        [HttpGet("gamesList")]
+        public async Task<ActionResult<List<PlayerGame>>> GetPlayerGamesList([FromQuery] string username)
+        {
+            List<PlayerGame> playerGamesList = await _playerService.GetPlayerGamesList(username);
+            return Ok(playerGamesList);
+        }
     }
 }

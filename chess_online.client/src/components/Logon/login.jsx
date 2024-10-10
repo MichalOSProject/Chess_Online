@@ -28,6 +28,7 @@ const Login = () => {
             return response.json();
         }).then(data => {
             const { token } = data;
+            console.log(token)
             localStorage.setItem('token', token);
             setErrorText(null)
             navigate('/',);

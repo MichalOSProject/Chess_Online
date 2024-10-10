@@ -363,5 +363,5 @@ MigrationBackup/
 FodyWeavers.xsd
 
 #Folders
-Uploads/*
-!Uploads/.gitkeep
+Chess_Online.Server/Uploads/*
+!Chess_Online.Server/Uploads/.gitkeep

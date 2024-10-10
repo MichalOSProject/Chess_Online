@@ -30,6 +30,7 @@ const Login = () => {
             setErrorText(null)
             navigate('/login',);
         }).catch(error => {
+            console.log(error)
             setErrorText(error.message)
         });
     };

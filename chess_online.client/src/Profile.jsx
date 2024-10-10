@@ -1,16 +1,27 @@
 import { Button, TextField, Input} from "@mui/material";
 import { useState, useEffect } from 'react';
 import { jwtDecode } from "jwt-decode";
+import { useNavigate } from 'react-router-dom';
+import { DataGrid } from '@mui/x-data-grid';
 
 const Profile = () => {
     const token = localStorage.getItem('token')
     const decodedToken = jwtDecode(localStorage.getItem('token'))
+    const navigate = useNavigate();
     const [playerUsername, setPlayerUsername] = useState("");
     const [newUsername, setNewUsername] = useState("");
     const [playerStats, setPlayerStats] = useState("");
     const [file, setFile] = useState(null);
     const [myProfilePhoto, setMyProfilePhoto] = useState(null);
     const [profilePhoto, setProfilePhoto] = useState(null);
+    const [rows, setRows] = useState([]);
+    const columns = [
+        { field: 'id', headerName: 'LP:', flex: 0.5 },
+        { field: 'gameId', headerName: 'Game ID:', flex: 1.5 },
+        { field: 'oponentUsername', headerName: 'Oponent:', flex: 2 },
+        { field: 'playedAs', headerName: 'Played Team:', flex: 2 },
+        { field: 'winner', headerName: 'Winner:', flex: 2 },
+    ];
 
     useEffect(() => {
         setPlayerUsername(decodedToken.sub)
@@ -51,7 +62,38 @@ const Profile = () => {
         }).catch(error => {
             console.log(error.message)
         });
+
+        fetch(`https://localhost:7038/api/Player/gamesList?username=${decodedToken.sub}`, {
+            method: 'GET',
+            mode: 'cors',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+        }).then(response => {
+            if (!response.ok) {
+                return response.text().then(errorData => {
+                    throw new Error(errorData);
+                });
+            }
+            return response.text();
+        }).then(data => {
+            getGames(JSON.parse(data))
+        }).catch(error => {
+            console.log(error.message)
+        });
+
     }, []);
+
+    const getGames = (gamesData) => {
+        const updatedRows = gamesData.map((item,index) => ({
+            id: index+1,
+            gameId: item.gameId,
+            oponentUsername: item.oponentUsername,
+            playedAs: item.playedAs,
+            winner: item.ended ? item.winner : "Not Finished"
+        }));
+        setRows(updatedRows);
+    };
 
     const fetchProfilePhoto = async () => {
         fetch(`https://localhost:7038/api/Player/getProfilePhoto?username=${playerUsername}`, {
@@ -116,11 +158,33 @@ const Profile = () => {
     };
 
     const handleUsernameUpdate = () => {
-        //on success, delete token aka.logoff
+        fetch(`https://localhost:7038/api/Account/changeUsername`, {
+            method: 'POST',
+            mode: 'cors',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ oldLogin: decodedToken.sub, newLogin: newUsername })
+        }).then(response => {
+            if (!response.ok) {
+                return response.text().then(errorData => {
+                    throw new Error(errorData);
+                });
+            }
+            return response.json();
+        }).then(data => {
+            const { token } = data;
+            localStorage.setItem('token', token);
+            window.location.reload();
+        }).catch(error => {
+            alert(error.message)
+        });
+        console.log("data to send ", { oldLogin: decodedToken.sub, newLogin: newUsername });
     }
 
     const handlePasswordUpdate = () => {
-        //move to reset password page
+        navigate('/resetPassword',);
     }
 
     const findPlayer = () => {
@@ -249,10 +313,10 @@ const Profile = () => {
                     {myProfilePhoto ? (<img src={myProfilePhoto} alt="Profile" className="playerPhoto" />) : ""}
                     <form onSubmit={handleUpload} className="option">
                         <h3>Change your Profile Photo</h3>
-                        <Input type="file" onChange={handleFileChange} accept="image/*" />
+                        <Input type="file" onChange={handleFileChange} accept="image/*"/>
                         <Button type="submit">Set new Picture!</Button>
                     </form>
-                    <form onSubmit={handleUsernameUpdate} className="option">
+                    <div className="option">
                         <h3>Change your Username</h3>
                         <TextField
                             className="default_textfield"
@@ -263,14 +327,32 @@ const Profile = () => {
                             value={newUsername}
                             onChange={handleNewUsernameChange}
                         />
-                        <Button type="submit">Set new Username!</Button>
-                    </form>
+                        <Button onClick={handleUsernameUpdate} type="submit">Set new Username!</Button>
+                    </div>
                     <form onSubmit={handlePasswordUpdate} className="option">
                         <h3>Change your Password</h3>
                         <Button type="submit">Set new Password!</Button>
                     </form>
                 </div>
-                <div className="profileTab">last GAMES!</div>
+                <div className="profileTab_Games">
+                    <DataGrid
+                        tablesort
+                        rows={rows}
+                        columns={columns}
+                        autoHeight={false}
+                        initialState={{
+                            sorting: {
+                                sortModel: [{ field: 'id', sort: 'desc' }],
+                            },
+                            columns: {
+                                columnVisibilityModel: {
+                                    id: false,
+                                },
+                            }
+                        }}
+                        pageSizeOptions={[5, 10, 15]}
+                    />
+                </div>
             </div>
         </div>
     );

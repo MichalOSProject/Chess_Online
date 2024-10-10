@@ -1,5 +1,5 @@
 import { Button, TextField, Switch } from "@mui/material";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { jwtDecode } from "jwt-decode";
@@ -177,7 +177,6 @@ const Lobby = () => {
                                 columns: {
                                     columnVisibilityModel: {
                                         LP: false,
-                                        employeePartnerId: false
                                     },
                                 }
                             }}

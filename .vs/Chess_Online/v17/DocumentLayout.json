@@ -3,20 +3,20 @@
   "WorkspaceRootPath": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{4BF0D7F6-F18A-4046-998D-950F9CEB4861}|chess_online.client\\chess_online.client.esproj|c:\\users\\mosic\\michalosproject\\chess_online\\chess_online.client\\src\\lobby.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{4BF0D7F6-F18A-4046-998D-950F9CEB4861}|chess_online.client\\chess_online.client.esproj|solutionrelative:chess_online.client\\src\\lobby.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{4BF0D7F6-F18A-4046-998D-950F9CEB4861}|chess_online.client\\chess_online.client.esproj|c:\\users\\mosic\\michalosproject\\chess_online\\chess_online.client\\src\\app.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
-      "RelativeMoniker": "D:0:0:{4BF0D7F6-F18A-4046-998D-950F9CEB4861}|chess_online.client\\chess_online.client.esproj|solutionrelative:chess_online.client\\src\\app.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+      "AbsoluteMoniker": "D:0:0:{5799ECC5-90D3-4761-BE0E-18CDC130EC87}|Chess_Online.Server\\Chess_Online.Server.csproj|c:\\users\\mosic\\michalosproject\\chess_online\\chess_online.server\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5799ECC5-90D3-4761-BE0E-18CDC130EC87}|Chess_Online.Server\\Chess_Online.Server.csproj|solutionrelative:chess_online.server\\controllers\\accountcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{4BF0D7F6-F18A-4046-998D-950F9CEB4861}|chess_online.client\\chess_online.client.esproj|c:\\users\\mosic\\michalosproject\\chess_online\\chess_online.client\\src\\profile.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
       "RelativeMoniker": "D:0:0:{4BF0D7F6-F18A-4046-998D-950F9CEB4861}|chess_online.client\\chess_online.client.esproj|solutionrelative:chess_online.client\\src\\profile.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{4BF0D7F6-F18A-4046-998D-950F9CEB4861}|chess_online.client\\chess_online.client.esproj|c:\\users\\mosic\\michalosproject\\chess_online\\chess_online.client\\src\\index.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}",
-      "RelativeMoniker": "D:0:0:{4BF0D7F6-F18A-4046-998D-950F9CEB4861}|chess_online.client\\chess_online.client.esproj|solutionrelative:chess_online.client\\src\\index.css||{A5401142-F49D-43DB-90B1-F57BA349E55C}"
+      "AbsoluteMoniker": "D:0:0:{4BF0D7F6-F18A-4046-998D-950F9CEB4861}|chess_online.client\\chess_online.client.esproj|c:\\users\\mosic\\michalosproject\\chess_online\\chess_online.client\\src\\components\\logon\\register.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}",
+      "RelativeMoniker": "D:0:0:{4BF0D7F6-F18A-4046-998D-950F9CEB4861}|chess_online.client\\chess_online.client.esproj|solutionrelative:chess_online.client\\src\\components\\logon\\register.jsx||{14D17961-FE51-464D-9111-C4AF11D7D99A}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{5799ECC5-90D3-4761-BE0E-18CDC130EC87}|Chess_Online.Server\\Chess_Online.Server.csproj|c:\\users\\mosic\\michalosproject\\chess_online\\chess_online.server\\data\\entity\\applicationuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{5799ECC5-90D3-4761-BE0E-18CDC130EC87}|Chess_Online.Server\\Chess_Online.Server.csproj|solutionrelative:chess_online.server\\data\\entity\\applicationuser.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,34 +26,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 8,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "Lobby.jsx",
-              "DocumentMoniker": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\chess_online.client\\src\\Lobby.jsx",
-              "RelativeDocumentMoniker": "chess_online.client\\src\\Lobby.jsx",
-              "ToolTip": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\chess_online.client\\src\\Lobby.jsx",
-              "RelativeToolTip": "chess_online.client\\src\\Lobby.jsx",
-              "ViewState": "AgIAAGAAAAAAAAAAAAAAAHoAAAAbAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2024-10-08T21:50:14.476Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "App.jsx",
-              "DocumentMoniker": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\chess_online.client\\src\\App.jsx",
-              "RelativeDocumentMoniker": "chess_online.client\\src\\App.jsx",
-              "ToolTip": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\chess_online.client\\src\\App.jsx",
-              "RelativeToolTip": "chess_online.client\\src\\App.jsx",
-              "ViewState": "AgIAAAAAAAAAAAAAAAAAABQAAAAhAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2024-10-08T21:49:42.588Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:131:0:{1fc202d4-d401-403c-9834-5b218574bb67}"
@@ -76,28 +50,54 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "index.css",
-              "DocumentMoniker": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\chess_online.client\\src\\index.css",
-              "RelativeDocumentMoniker": "chess_online.client\\src\\index.css",
-              "ToolTip": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\chess_online.client\\src\\index.css",
-              "RelativeToolTip": "chess_online.client\\src\\index.css",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAAB4AAAARAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003000|",
-              "WhenOpened": "2024-10-08T16:29:49.583Z",
+              "DocumentIndex": 2,
+              "Title": "register.jsx",
+              "DocumentMoniker": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\chess_online.client\\src\\components\\Logon\\register.jsx",
+              "RelativeDocumentMoniker": "chess_online.client\\src\\components\\Logon\\register.jsx",
+              "ToolTip": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\chess_online.client\\src\\components\\Logon\\register.jsx",
+              "RelativeToolTip": "chess_online.client\\src\\components\\Logon\\register.jsx",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAACAAAAAdAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
+              "WhenOpened": "2024-10-10T16:41:42.272Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
+              "Title": "ApplicationUser.cs",
+              "DocumentMoniker": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\Chess_Online.Server\\Data\\Entity\\ApplicationUser.cs",
+              "RelativeDocumentMoniker": "Chess_Online.Server\\Data\\Entity\\ApplicationUser.cs",
+              "ToolTip": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\Chess_Online.Server\\Data\\Entity\\ApplicationUser.cs",
+              "RelativeToolTip": "Chess_Online.Server\\Data\\Entity\\ApplicationUser.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAWAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-10T16:40:34.834Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "Profile.jsx",
               "DocumentMoniker": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\chess_online.client\\src\\Profile.jsx",
               "RelativeDocumentMoniker": "chess_online.client\\src\\Profile.jsx",
               "ToolTip": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\chess_online.client\\src\\Profile.jsx",
               "RelativeToolTip": "chess_online.client\\src\\Profile.jsx",
-              "ViewState": "AgIAAN4AAAAAAAAAAAAAAPgAAAAWAAAAAAAAAA==",
+              "ViewState": "AgIAAI0AAAAAAAAAAAAAALQAAAARAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003663|",
-              "WhenOpened": "2024-10-08T15:02:04.368Z",
+              "WhenOpened": "2024-10-10T16:13:47.988Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "AccountController.cs",
+              "DocumentMoniker": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\Chess_Online.Server\\Controllers\\AccountController.cs",
+              "RelativeDocumentMoniker": "Chess_Online.Server\\Controllers\\AccountController.cs",
+              "ToolTip": "C:\\Users\\Mosic\\MichalOSProject\\Chess_Online\\Chess_Online.Server\\Controllers\\AccountController.cs",
+              "RelativeToolTip": "Chess_Online.Server\\Controllers\\AccountController.cs",
+              "ViewState": "AgIAAEgAAAAAAAAAAAAkwGYAAAASAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-10T16:12:46.008Z",
               "EditorCaption": ""
             }
           ]

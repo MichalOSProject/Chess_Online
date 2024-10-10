@@ -30,6 +30,7 @@ namespace Chess_Online.Server.Controllers
         public async Task<IActionResult> Register([FromBody] registerUserModelInput model)
         {
             var user = new ApplicationUser { UserName = model.Username, Email = model.Email };
+            user.PhotoUrl = "";
             var result = await _userManager.CreateAsync(user, model.Password);
             if (result.Succeeded)
             {
@@ -45,9 +46,7 @@ namespace Chess_Online.Server.Controllers
             if (ModelState.IsValid)
             {
                 var user = await _userManager.FindByEmailAsync(model.Email);
-                Console.WriteLine("finded: " + user.UserName);
                 var result = await _signInManager.PasswordSignInAsync(user.UserName, model.Password, isPersistent: false, lockoutOnFailure: false);
-                Console.WriteLine("Result: " + result);
 
                 if (result.Succeeded)
                 {
@@ -66,5 +65,49 @@ namespace Chess_Online.Server.Controllers
 
             return BadRequest("Invalid Data");
         }
+        [Authorize]
+        [HttpPost("passwordReset")]
+        public async Task<IActionResult> resetPassword([FromBody] resetPasswordModelInput model)
+        {
+            var resultLogin = await _signInManager.PasswordSignInAsync(model.login, model.Password, isPersistent: false, lockoutOnFailure: false);
+
+            if (resultLogin.Succeeded)
+            {
+                ApplicationUser user = await _userManager.FindByNameAsync(model.login);
+
+                var resetToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, resetToken, model.newPassword);
+                if (result.Succeeded)
+                {
+                    var token = await _authService.GenerateTokenAsync(user);
+                    return Ok(new { token });
+                }
+            }
+
+            return BadRequest("Invalid login or Password");
+
+        }
+        [Authorize]
+        [HttpPost("changeUsername")]
+        public async Task<IActionResult> changeUsername([FromBody] changeUsernameModelInput model)
+        {
+
+            ApplicationUser user = await _userManager.FindByNameAsync(model.oldLogin);
+
+            if (await _userManager.FindByNameAsync(model.newLogin) != null)
+            {
+                return BadRequest("This username is in use by another Player");
+            }
+            user.UserName = model.newLogin;
+            user.NormalizedUserName = model.newLogin.ToUpper();
+
+            await _userManager.UpdateAsync(user);
+
+            var token = await _authService.GenerateTokenAsync(user);
+
+            return Ok(new { token });
+
+        }
     }
 }
+

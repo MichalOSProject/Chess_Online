@@ -5,6 +5,7 @@ import Profile from './Profile.jsx'
 import NotFound from './notFound.jsx'
 import Register from './components/Logon/register.jsx'
 import Login from './components/Logon/login.jsx'
+import ResetPassword from './components/Logon/resetPassword.jsx'
 import SiteProtect from './components/Security/SiteProtect.jsx'
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
                 <Route path="/register" element={<Register />} />
                 <Route path="/Login" element={<Login />} />
                 <Route element={<SiteProtect />}>
+                    <Route path="/resetPassword" element={<ResetPassword />} />
                     <Route path="/" element={<Lobby />} />
                     <Route path="/Game" element={<Game />} />
                     <Route path="/Profile" element={<Profile />} />
